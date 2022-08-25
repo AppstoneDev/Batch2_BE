@@ -22,12 +22,22 @@ app.get("/check_health", (req, res) => {
 var users = []
 
 app.post("/user", (req, res) => {
-  console.log(req.body)
   req.body = JSON.parse(JSON.stringify(req.body))
-  console.log(req.body)
 
-  users.push(req.body)
-  res.send("User added successful");
+  if (req.body.hasOwnProperty("phone_no")
+    && req.body.hasOwnProperty("email")) {
+    users.push(req.body)
+    res.send("User added successful");
+  } else {
+    if (!req.body.hasOwnProperty("phone_no")) {
+
+      res.send("Missing Phone Number Field")
+    } else if (!req.body.hasOwnProperty("email")) {
+      res.send("Missing Email Field")
+    }
+  }
+
+
 })
 
 app.get("/user", (req, res) => {
@@ -39,9 +49,10 @@ app.delete("/user", (req, res) => {
 
   var nameToBeRemoved = req.body.name;
 
-  for (var user of users){
-    if(user.name == nameToBeRemoved){
-      users.pop(user);
+  for (var i in users) {
+    if (users[i].name == nameToBeRemoved) {
+      delete users[i];
+      return
     }
   }
 
