@@ -2,7 +2,8 @@ const express = require('express');
 let cors = require('cors')
 const app = express();
 
-const dbConnector = require('./db')
+const dbConnector = require('./db');
+const ObjectID = require('mongodb').ObjectId;
 
 app.set("PORT", 8000);
 app.use(express.urlencoded({ extended: false }))
@@ -34,13 +35,25 @@ app.post("/user", (req, res) => {
     && req.body.hasOwnProperty("email")) {
     // users.push(req.body)
 
-    dbConnector.collection("users").insertOne(req.body, (err, doc) => {
+    dbConnector.collection("users").findOne({ "phone_no": req.body.phone_no }, (err, doc) => {
       if (err) {
-        res.send("User adding error" + err);
+        res.send("Error in inserting " + err);
       } else {
-        res.send("User added successful");
+        if (doc == null || doc == undefined || doc.matchedCount == 0) {
+          dbConnector.collection("users").insertOne(req.body, (err, doc) => {
+            if (err) {
+              res.send("User adding error" + err);
+            } else {
+              res.send("User added successful");
+            }
+          })
+        } else {
+          res.send("user already exists")
+        }
       }
     })
+
+
 
 
   } else {
@@ -56,7 +69,7 @@ app.post("/user", (req, res) => {
 
 app.get("/user", (req, res) => {
   // res.json({ status: true, message: "users found", result: users })
-  var cursor = dbConnector.collection("users").find({"name": "Kapuramani"});
+  var cursor = dbConnector.collection("users").find();
 
   var userResult = [];
 
@@ -94,16 +107,84 @@ app.get("/user", (req, res) => {
 app.delete("/user", (req, res) => {
   req.body = JSON.parse(JSON.stringify(req.body))
 
-  var nameToBeRemoved = req.body.name;
 
-  for (var i in users) {
-    if (users[i].name == nameToBeRemoved) {
-      delete users[i];
-      return
+  var userID = req.body.user_id
+
+  delete req.body["user_id"]
+
+  dbConnector.collection("users").deleteOne({ "_id": new ObjectID(userID) }, (err, doc) => {
+    if (err) {
+      res.json({ status: false, message: "Error occured " + err });
+    } else {
+      if (doc != undefined && doc != null && doc.deletedCount > 0) {
+        res.json({ status: true, message: "User deleted successfully" })
+      } else {
+        res.json({ status: false, message: "User not found" });
+      }
     }
+  })
+
+
+})
+
+app.put("/user", (req, res) => {
+  req.body = JSON.parse(JSON.stringify(req.body))
+
+  // console.log(req.body)
+
+  var phone_no = req.body.phone_no
+  var userID = req.body.user_id
+
+  delete req.body["phone_no"]
+  delete req.body["user_id"]
+
+
+
+
+  //dbConnector.collection("users").updateOne({condition_check}, {updating new values}, {upsert}, {callback})
+
+
+  dbConnector.collection("users").updateOne(
+    { "_id": new ObjectID(userID) },
+    //{ "phone_no": phone_no }, // checking of the condition to match the document we want to edit.
+
+    // { $set: req.body }, // setting the updated data to the database
+    {
+      $set: {
+        name: req.body.name,
+        email: req.body.email,
+      }
+    },
+
+    { upsert: false }, // return or not the udpated value
+    (err, doc) => {
+      if (err) {
+        res.json({ status: false, message: "error in updating user" })
+      } else {
+        res.json({ status: true, message: "User updated successfully" })
+      }
+    })
+})
+
+
+app.post("/artist", (req, res) => {
+  req.body = JSON.parse(JSON.stringify(req.body))
+
+  var newData = {
+    artist_name: req.body.artist_name,
+    artist_profile_img: req.body.artist_profile_img,
+    dob: new Date(req.body.dob), // yyyy:MM:ddThh:mm:ss.sssZ
+    active: true,
+    created_on: new Date()
   }
 
-  res.send("User deleted successfully")
+  dbConnector.collection("artist").insertOne(newData, (err, doc) => {
+    if (err) {
+      res.json({ status: false, message: "Error occured while inserting " + err });
+    } else {
+      res.json({ status: true, message: "Artist Inserted successfully" });
+    }
+  })
 })
 
 //HTTP Methods - GET, POST, PUT / PATCH , DELETE 
