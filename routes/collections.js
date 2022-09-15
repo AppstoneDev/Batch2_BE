@@ -1,3 +1,4 @@
 module.exports = {
-  ARTIST: "artist"
+  ARTIST: "artist",
+  ALBUM : "album"
 }
