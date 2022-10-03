@@ -11,7 +11,7 @@ router.post("/album", (req, res) => {
   var album = {
     album_name: req.body.album_name,
     album_img: req.body.album_img,
-    album_release_date: req.body.album_release_date,
+    album_release_date: parseInt(req.body.album_release_date),
     artist: new ObjectID(req.body.artist),
     created_on: new Date(),
     active: true
@@ -30,8 +30,35 @@ router.get("/album", (req, res) => {
 
   // var cursor = dbConnector.collection(collection.ALBUM).find()
 
+  //Doing Individual Queries
+  // var query = {}
+  // if (req.query != undefined) {
+
+  //   if (req.query.release_year != undefined && req.query.release_year != null && req.query.release_year != "") {
+  //     query = { "album_release_date": { $gte: parseInt(req.query.release_year) } }
+  //   }
+
+  //   if (req.query.album_name != undefined && req.query.album_name != null && req.query.album_name != "") {
+  //     query = { "album_name": new RegExp(req.query.album_name, "i") }
+  //   }
+  // }
+
+  
+
+  var query = []
+  if (req.query != undefined) {
+
+    if (req.query.release_year != undefined && req.query.release_year != null && req.query.release_year != "") {
+      query.push({ "album_release_date": { $gte: parseInt(req.query.release_year) } })
+    }
+
+    if (req.query.album_name != undefined && req.query.album_name != null && req.query.album_name != "") {
+      query.push({ "album_name": new RegExp(req.query.album_name, "i") })
+    }
+  }
+
   var cursor = dbConnector.collection(collection.ALBUM).aggregate([
-    { $match: {} },
+    { $match: { $and: query } },
     { $lookup: { from: collection.ARTIST, localField: "artist", foreignField: "_id", as: "artist_details" } },
     { $unwind: "$artist_details" },
     {
