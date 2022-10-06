@@ -5,7 +5,7 @@ const router = express.Router()
 const dbConnector = require('../db')
 const collection = require("./collections")
 
-
+//ADD ARTIST
 router.post("/artist", (req, res) => {
   req.body = JSON.parse(JSON.stringify(req.body))
 
@@ -26,6 +26,7 @@ router.post("/artist", (req, res) => {
   })
 })
 
+//VIEW ARTIST
 router.get("/artist", (req, res) => {
 
   var cursor = dbConnector.collection(collection.ARTIST).find({})
@@ -58,6 +59,43 @@ router.get("/artist", (req, res) => {
     })
   })
 
+})
+
+
+router.put("/artist", (req, res) => {
+  req.body = JSON.parse(JSON.stringify(req.body))
+
+  if (req.body.hasOwnProperty("_id")) {
+
+    var updateData = {}
+
+    if (req.body.artist_name != undefined && req.body.artist_name != null && req.body.artist_name != "") {
+      updateData.artist_name = req.body.artist_name
+    }
+
+    if (req.body.artist_profile_img != undefined && req.body.artist_profile_img != null && req.body.artist_profile_img != "") {
+      updateData.artist_profile_img = req.body.artist_profile_img
+    }
+
+    if (req.body.dob != undefined && req.body.dob != null && req.body.dob != "") {
+      updateData.dob = new Date(req.body.dob)
+    }
+
+    dbConnector.collection(collection.ARTIST).updateOne({ _id: new ObjectID(req.body._id) }, {
+      $set: updateData
+    }, (err, doc) => {
+      if (err) {
+        res.json({ status: false, message: err });
+      } else {
+        res.json({ status: true, message: "Artist data updated" });
+      }
+    })
+
+  } else {
+    if (!req.body.hasOwnProperty("_id")) {
+      return res.json({ status: false, message: "_id parameter is missing" });
+    }
+  }
 })
 
 module.exports = router
