@@ -190,3 +190,23 @@ app.post("/artist", (req, res) => {
 })
 
 //HTTP Methods - GET, POST, PUT / PATCH , DELETE 
+
+
+//GIT COMMANDS
+/*
+1. Create a repository in Github
+2. In the terminal of your VS code type git init
+3. Then connect your code to the remote repository with the command "git remode add origin repo_url"
+4. Then type "git add ." to add all the changes or files generated
+5. Then type "git commit -m "message" "
+6. Type "git push origin master"
+
+
+
+1. git add .
+2. git commit -m "commit message"
+3. git pull origin master
+4. git push origin master
+
+
+*/
