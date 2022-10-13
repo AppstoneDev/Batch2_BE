@@ -6,15 +6,15 @@ const router = require("./routes/index")
 const dbConnector = require('./db');
 const ObjectID = require('mongodb').ObjectId;
 
-app.set("PORT", 8000);
+app.set("port", 8000);
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 app.use(cors());
 app.use("/api", router);
 
 dbConnector.connect(() => {
-  app.listen(app.get("PORT"), () => {
-    console.log("App is running " + app.get("PORT"));
+  app.listen(app.get("port"), () => {
+    console.log("App is running " + app.get("port"));
   })
 })
 
